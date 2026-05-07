@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Home from './pages/Home'
 import ShopDetail from './pages/ShopDetail'
+import ProductDetail from './pages/ProductDetail'
 import AdminDashboard from './pages/admin/Dashboard'
 import MerchantDashboard from './pages/merchant/Dashboard'
 import UserOrders from './pages/user/Orders'
@@ -38,6 +39,11 @@ export default function App() {
       <Route path="/shop/:id" element={
         <ProtectedRoute roles={['user', 'admin']}>
           <Layout><ShopDetail /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/product/:id" element={
+        <ProtectedRoute roles={['user', 'admin']}>
+          <Layout><ProductDetail /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/admin" element={

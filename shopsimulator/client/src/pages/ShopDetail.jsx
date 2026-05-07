@@ -107,9 +107,10 @@ export default function ShopDetail() {
           <p className="text-text-secondary text-xs py-4 text-center">No products available</p>
         ) : (
           products.map((product) => (
-            <div
+            <Link
               key={product.id}
-              className="bg-bg-card border border-border-color rounded p-3 flex items-center justify-between hover:border-accent/30 transition-all duration-150"
+              to={`/product/${product.id}`}
+              className="bg-bg-card border border-border-color rounded p-3 flex items-center justify-between hover:border-accent/30 transition-all duration-150 cursor-pointer"
             >
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-text-primary">{product.productName}</h3>
@@ -128,13 +129,13 @@ export default function ShopDetail() {
               {user?.role === 'user' && (
                 <Button
                   size="sm"
-                  onClick={() => handleBuy(product)}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleBuy(product) }}
                   disabled={buying === product.id || parseFloat(user.balance) < parseFloat(product.price)}
                 >
                   {buying === product.id ? '...' : '+'}
                 </Button>
               )}
-            </div>
+            </Link>
           ))
         )}
       </div>
