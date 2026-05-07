@@ -81,6 +81,41 @@ router.get('/products', async (req, res) => {
   }
 })
 
+router.get('/products/random', async (req, res) => {
+  try {
+    const count = Math.min(Math.max(parseInt(req.query.count) || 8, 1), 50)
+
+    const rows = await req.app.locals.prisma.$queryRawUnsafe(`
+      SELECT p.id, p.product_name, p.description, p.price, p.image_url, p.status, p.created_at, p.shop_id, s.shop_name
+      FROM products p
+      JOIN shops s ON p.shop_id = s.id
+      WHERE p.status = 'active'
+      ORDER BY RAND()
+      LIMIT ${count}
+    `)
+
+    const products = rows.map((r) => ({
+      id: r.id,
+      productName: r.product_name,
+      description: r.description,
+      price: r.price.toString(),
+      imageUrl: r.image_url,
+      status: r.status,
+      createdAt: r.created_at,
+      shopId: r.shop_id,
+      shop: {
+        id: r.shop_id,
+        shopName: r.shop_name,
+      },
+    }))
+
+    res.json(products)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: '获取随机商品失败' })
+  }
+})
+
 router.get('/products/:id', async (req, res) => {
   try {
     const product = await req.app.locals.prisma.product.findUnique({
