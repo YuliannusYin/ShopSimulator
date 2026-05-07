@@ -121,13 +121,16 @@ router.post('/orders', authenticate, async (req, res) => {
 
     const product = await req.app.locals.prisma.product.findUnique({
       where: { id: parseInt(productId) },
+      include: {
+        shop: { select: { merchantId: true } },
+      },
     })
 
     if (!product || product.status !== 'active') {
       return res.status(404).json({ error: '商品不存在或已下架' })
     }
 
-    if (req.user.id === product.shopId) {
+    if (req.user.id === product.shop.merchantId) {
       return res.status(403).json({ error: '不能购买自己店铺的商品' })
     }
 
@@ -142,9 +145,10 @@ router.post('/orders', authenticate, async (req, res) => {
     }
 
     const result = await req.app.locals.prisma.$transaction(async (tx) => {
-      await tx.user.update({
+      const updatedUser = await tx.user.update({
         where: { id: req.user.id },
         data: { balance: { decrement: totalPrice } },
+        select: { id: true, username: true, role: true, balance: true },
       })
 
       const merchant = await tx.shop.findUnique({
@@ -171,17 +175,21 @@ router.post('/orders', authenticate, async (req, res) => {
         },
       })
 
-      return order
+      return { order, updatedUser }
     })
 
     res.status(201).json({
       message: '购买成功',
+      user: {
+        ...result.updatedUser,
+        balance: result.updatedUser.balance.toString(),
+      },
       order: {
-        ...result,
-        totalPrice: result.totalPrice.toString(),
+        ...result.order,
+        totalPrice: result.order.totalPrice.toString(),
         product: {
-          ...result.product,
-          price: result.product.price.toString(),
+          ...result.order.product,
+          price: result.order.product.price.toString(),
         },
       },
     })

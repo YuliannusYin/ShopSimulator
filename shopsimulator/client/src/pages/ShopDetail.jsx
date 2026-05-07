@@ -41,8 +41,7 @@ export default function ShopDetail() {
     try {
       const { data } = await api.post('/orders', { productId: product.id, quantity: 1 })
       setFeedback({ type: 'success', message: data.message || 'Purchase successful!' })
-      const updatedUser = { ...user, balance: parseFloat(user.balance) - parseFloat(product.price) }
-      useAuthStore.getState().setAuth(useAuthStore.getState().token, updatedUser)
+      useAuthStore.getState().setAuth(useAuthStore.getState().token, data.user)
     } catch (err) {
       setFeedback({ type: 'error', message: err.response?.data?.error || 'Purchase failed' })
     } finally {

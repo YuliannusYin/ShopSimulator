@@ -1,18 +1,46 @@
 import { create } from 'zustand'
 
+const TOKEN_KEY = 'shopsimulator_token'
+const USER_KEY = 'shopsimulator_user'
+
+const safeGetItem = (key) => {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    console.error(`localStorage.getItem("${key}") failed`)
+    return null
+  }
+}
+
+const safeSetItem = (key, value) => {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    console.error(`localStorage.setItem("${key}") failed`)
+  }
+}
+
+const safeRemoveItem = (key) => {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    console.error(`localStorage.removeItem("${key}") failed`)
+  }
+}
+
 export const useAuthStore = create((set) => ({
-  token: localStorage.getItem('shopsimulator_token') || null,
-  user: JSON.parse(localStorage.getItem('shopsimulator_user') || 'null'),
+  token: safeGetItem(TOKEN_KEY) || null,
+  user: JSON.parse(safeGetItem(USER_KEY) || 'null'),
 
   setAuth: (token, user) => {
-    localStorage.setItem('shopsimulator_token', token)
-    localStorage.setItem('shopsimulator_user', JSON.stringify(user))
+    safeSetItem(TOKEN_KEY, token)
+    safeSetItem(USER_KEY, JSON.stringify(user))
     set({ token, user })
   },
 
   logout: () => {
-    localStorage.removeItem('shopsimulator_token')
-    localStorage.removeItem('shopsimulator_user')
+    safeRemoveItem(TOKEN_KEY)
+    safeRemoveItem(USER_KEY)
     set({ token: null, user: null })
   },
 }))
