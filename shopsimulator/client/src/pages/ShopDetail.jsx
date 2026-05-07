@@ -110,8 +110,15 @@ export default function ShopDetail() {
             <Link
               key={product.id}
               to={`/product/${product.id}`}
-              className="bg-bg-card border border-border-color rounded p-3 flex items-center justify-between hover:border-accent/30 transition-all duration-150 cursor-pointer"
+              className="bg-bg-card border border-border-color rounded p-3 flex items-center gap-3 hover:border-accent/30 transition-all duration-150 cursor-pointer"
             >
+              <div className="w-12 h-12 rounded-sm bg-bg-primary border border-border-color overflow-hidden flex items-center justify-center flex-shrink-0">
+                {product.imageUrl ? (
+                  <img src={product.imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
+                ) : (
+                  <span className="text-text-secondary text-[10px] font-mono">Img</span>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-text-primary">{product.productName}</h3>
                 {product.description && (

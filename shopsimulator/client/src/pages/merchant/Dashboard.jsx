@@ -7,6 +7,25 @@ import Modal from '../../components/ui/Modal'
 import Card from '../../components/ui/Card'
 import { SkeletonTable, SkeletonCard } from '../../components/ui/Skeleton'
 
+function ProductImagePreview({ url }) {
+  const [error, setError] = useState(false)
+
+  if (!url || error) {
+    return (
+      <span className="text-text-secondary text-xs font-mono">Img</span>
+    )
+  }
+
+  return (
+    <img
+      src={url}
+      alt="preview"
+      className="w-full h-full object-cover"
+      onError={() => setError(true)}
+    />
+  )
+}
+
 export default function MerchantDashboard() {
   const [tab, setTab] = useState('products')
   const [shop, setShop] = useState(null)
@@ -15,9 +34,14 @@ export default function MerchantDashboard() {
   const [loading, setLoading] = useState(true)
 
   const [productModal, setProductModal] = useState(null)
-  const [productForm, setProductForm] = useState({ productName: '', description: '', price: '' })
+  const [productForm, setProductForm] = useState({ productName: '', description: '', price: '', imageUrl: '' })
   const [productErrors, setProductErrors] = useState({})
   const [saving, setSaving] = useState(false)
+
+  const [shopModal, setShopModal] = useState(null)
+  const [shopForm, setShopForm] = useState({ shopName: '', description: '' })
+  const [shopErrors, setShopErrors] = useState({})
+  const [shopSaving, setShopSaving] = useState(false)
 
   const [feedback, setFeedback] = useState({ type: '', message: '' })
 
@@ -50,16 +74,17 @@ export default function MerchantDashboard() {
 
   const openCreateProduct = () => {
     setProductModal('create')
-    setProductForm({ productName: '', description: '', price: '' })
+    setProductForm({ productName: '', description: '', price: '', imageUrl: '' })
     setProductErrors({})
   }
 
   const openEditProduct = (product) => {
-    setProductModal('edit')
+    setProductModal(product)
     setProductForm({
       productName: product.productName,
       description: product.description || '',
       price: product.price,
+      imageUrl: product.imageUrl || '',
     })
     setProductErrors({})
   }
@@ -115,6 +140,48 @@ export default function MerchantDashboard() {
     }
   }
 
+  const openCreateShop = () => {
+    setShopModal('create')
+    setShopForm({ shopName: '', description: '' })
+    setShopErrors({})
+  }
+
+  const openEditShop = () => {
+    setShopModal('edit')
+    setShopForm({
+      shopName: shop.shopName,
+      description: shop.description || '',
+    })
+    setShopErrors({})
+  }
+
+  const validateShop = () => {
+    const errs = {}
+    if (!shopForm.shopName.trim()) errs.shopName = '店铺名称不能为空'
+    setShopErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
+  const handleSaveShop = async () => {
+    if (!validateShop()) return
+    setShopSaving(true)
+    try {
+      if (shopModal === 'create') {
+        await api.post('/merchant/shop', shopForm)
+        showFeedback('success', '店铺创建成功')
+      } else {
+        await api.put('/merchant/shop', shopForm)
+        showFeedback('success', '店铺已更新')
+      }
+      setShopModal(null)
+      fetchData()
+    } catch (err) {
+      showFeedback('error', err.response?.data?.error || '操作失败')
+    } finally {
+      setShopSaving(false)
+    }
+  }
+
   return (
     <div>
       <h1 className="text-base font-semibold text-text-primary mb-3">Merchant Panel</h1>
@@ -155,23 +222,23 @@ export default function MerchantDashboard() {
           {!shop ? (
             <Card>
               <p className="text-text-secondary text-xs mb-3">你还没有店铺</p>
-              <Button size="sm" onClick={async () => {
-                const name = prompt('请输入店铺名称:')
-                if (!name) return
-                try {
-                  await api.post('/merchant/shop', { shopName: name })
-                  fetchData()
-                  showFeedback('success', '店铺创建成功')
-                } catch (err) {
-                  showFeedback('error', err.response?.data?.error || '创建失败')
-                }
-              }}>Create Shop</Button>
+              <Button size="sm" onClick={openCreateShop}>Create Shop</Button>
             </Card>
           ) : (
             <>
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <span className="text-sm text-text-primary">{shop.shopName}</span>
+                  <button
+                    onClick={openEditShop}
+                    className="ml-2 text-text-secondary hover:text-accent transition-colors duration-150 text-xs"
+                    title="编辑商店信息"
+                  >
+                    ✎
+                  </button>
+                  {shop.description && (
+                    <p className="text-xs text-text-secondary mt-1 line-clamp-2">{shop.description}</p>
+                  )}
                 </div>
                 <Button size="sm" onClick={openCreateProduct}>+ New Product</Button>
               </div>
@@ -183,6 +250,7 @@ export default function MerchantDashboard() {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-border-color">
+                        <th className="text-left py-2 px-2 text-text-secondary font-medium w-8"></th>
                         <th className="text-left py-2 px-2 text-text-secondary font-medium">Name</th>
                         <th className="text-right py-2 px-2 text-text-secondary font-medium font-mono">Price</th>
                         <th className="text-left py-2 px-2 text-text-secondary font-medium">Status</th>
@@ -192,6 +260,15 @@ export default function MerchantDashboard() {
                     <tbody>
                       {products.map((p, i) => (
                         <tr key={p.id} className={`border-b border-border-color/50 ${i % 2 === 1 ? 'bg-bg-card/30' : ''}`}>
+                          <td className="py-2 px-2">
+                            <div className="w-7 h-7 rounded-sm bg-bg-primary border border-border-color overflow-hidden flex items-center justify-center">
+                              {p.imageUrl ? (
+                                <img src={p.imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
+                              ) : (
+                                <span className="text-text-secondary text-[10px] font-mono">Img</span>
+                              )}
+                            </div>
+                          </td>
                           <td className="py-2 px-2">
                             <div className="text-text-primary">{p.productName}</div>
                             {p.description && (
@@ -237,6 +314,31 @@ export default function MerchantDashboard() {
                 placeholder="Product name"
                 error={productErrors.productName}
               />
+              <div>
+                <label className="block text-xs text-text-secondary mb-1 font-medium tracking-wide uppercase">
+                  封面图片URL
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={productForm.imageUrl}
+                      onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                      placeholder="粘贴图片链接，如 https://example.com/car.jpg"
+                      className={`
+                        w-full h-5 px-2 bg-bg-card border rounded text-sm text-text-primary font-mono
+                        placeholder:text-text-secondary/50
+                        transition-all duration-150 ease-out
+                        focus:outline-none focus:border-accent
+                        border-border-color
+                      `}
+                    />
+                  </div>
+                  <div className="w-[120px] h-[80px] rounded-sm bg-bg-card border border-border-color flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <ProductImagePreview url={productForm.imageUrl} />
+                  </div>
+                </div>
+              </div>
               <Input
                 label="描述"
                 value={productForm.description}
@@ -255,6 +357,47 @@ export default function MerchantDashboard() {
                 <Button variant="secondary" size="sm" onClick={() => setProductModal(null)}>Cancel</Button>
                 <Button size="sm" onClick={handleSaveProduct} disabled={saving}>
                   {saving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          </Modal>
+
+          <Modal
+            isOpen={!!shopModal}
+            onClose={() => setShopModal(null)}
+            title={shopModal === 'create' ? 'Create Shop' : 'Edit Shop'}
+          >
+            <div className="space-y-3">
+              <Input
+                label="店铺名称"
+                value={shopForm.shopName}
+                onChange={(e) => setShopForm({ ...shopForm, shopName: e.target.value })}
+                placeholder="Shop name"
+                error={shopErrors.shopName}
+              />
+              <div className="w-full">
+                <label className="block text-xs text-text-secondary mb-1 font-medium tracking-wide uppercase">
+                  店铺简介
+                </label>
+                <textarea
+                  value={shopForm.description}
+                  onChange={(e) => setShopForm({ ...shopForm, description: e.target.value })}
+                  placeholder="Shop description (optional)"
+                  rows={3}
+                  className={`
+                    w-full px-2 py-2 bg-bg-card border rounded text-sm text-text-primary font-mono
+                    placeholder:text-text-secondary/50
+                    transition-all duration-150 ease-out
+                    focus:outline-none focus:border-accent
+                    resize-none
+                    border-border-color
+                  `}
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="secondary" size="sm" onClick={() => setShopModal(null)}>Cancel</Button>
+                <Button size="sm" onClick={handleSaveShop} disabled={shopSaving}>
+                  {shopSaving ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>
