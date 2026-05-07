@@ -7,6 +7,7 @@ import Register from './pages/Register'
 import Home from './pages/Home'
 import ShopDetail from './pages/ShopDetail'
 import ProductDetail from './pages/ProductDetail'
+import Explore from './pages/Explore'
 import AdminDashboard from './pages/admin/Dashboard'
 import MerchantDashboard from './pages/merchant/Dashboard'
 import UserOrders from './pages/user/Orders'
@@ -44,6 +45,11 @@ export default function App() {
       <Route path="/product/:id" element={
         <ProtectedRoute roles={['user', 'admin']}>
           <Layout><ProductDetail /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/explore" element={
+        <ProtectedRoute roles={['user', 'admin']}>
+          <Layout><Explore /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/admin" element={

@@ -14,6 +14,7 @@ const merchantLinks = [
 
 const userLinks = [
   { to: '/', label: 'Shops' },
+  { to: '/explore', label: 'Explore' },
   { to: '/user/orders', label: 'Orders' },
   { to: '/user/balance', label: 'Balance' },
 ]

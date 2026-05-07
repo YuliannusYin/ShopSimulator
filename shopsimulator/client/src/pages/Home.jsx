@@ -40,6 +40,18 @@ export default function Home() {
         <p className="text-xs text-text-secondary mt-1">Browse all merchant stores</p>
       </div>
 
+      <Link to="/explore" className="block mb-3">
+        <Card hover className="border-dashed">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🛍</span>
+            <div>
+              <p className="text-sm font-semibold text-text-primary">逛商场</p>
+              <p className="text-xs text-text-secondary">Random explore — discover something new</p>
+            </div>
+          </div>
+        </Card>
+      </Link>
+
       <div className="mb-3 max-w-xs">
         <Input
           value={search}
