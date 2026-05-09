@@ -1,5 +1,6 @@
 ---
 alwaysApply: false
+description: 
 ---
 # SSDG-update — ShopSimulator 开发指南自动更新规则
 
