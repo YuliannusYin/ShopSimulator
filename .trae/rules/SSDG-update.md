@@ -1,3 +1,6 @@
+---
+alwaysApply: false
+---
 # SSDG-update — ShopSimulator 开发指南自动更新规则
 
 > **激活方式**：当用户在对话中 `@SSDG-update` 时，按以下流程自动重新扫描项目并更新 `SSDev-guide` 规则文件。

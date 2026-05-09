@@ -1,3 +1,6 @@
+---
+alwaysApply: false
+---
 # SSDev-guide — ShopSimulator 项目开发指南
 
 > **激活方式**：当用户在对话中 `@SSDev-guide` 时，直接基于本文档掌握项目全貌，无需重新扫描或询问基础信息。
