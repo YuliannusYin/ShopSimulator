@@ -1,6 +1,6 @@
 ---
 alwaysApply: false
-description: 
+description: @SSDev-guide
 ---
 # SSDev-guide — ShopSimulator 项目开发指南
 
